@@ -9,6 +9,7 @@
     "start": "concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\""
   },
   "dependencies": {
+    "morgan": "^1.10.0",
     "jsdom": "^20.0.0",
     "yaml": "^2.2.0",
     "express": "^4.18.1"

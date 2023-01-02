@@ -2,10 +2,13 @@ import express, {Express} from 'express';
 import {Config} from "./config";
 import {parse} from "./parser";
 import {fetchContent} from "./content-fetch";
+import morgan from "morgan";
 
 const config = Config.parse();
 
 const app: Express = express();
+
+app.use(morgan('combined'));
 
 app.get('/', async (req, res) => res.redirect("/api"));
 
