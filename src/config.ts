@@ -1,16 +1,16 @@
-import {Field} from "./field";
 import fs from "fs";
 import {parse} from "yaml";
+import {Api} from "./api";
 
 const apiConfigFile = process.env.API_FILE || `${process.env.PWD}/api.yaml`;
 
 export class Config {
-    url: string;
-    fields: Field[];
+    port: number;
+    apis: Api[];
 
-    private constructor(url: string, fields: Field[]) {
-        this.url = url;
-        this.fields = fields;
+    constructor(port: number, apis: Api[]) {
+        this.port = port;
+        this.apis = apis;
     }
 
     static parse() {
@@ -21,6 +21,6 @@ export class Config {
 
         const file = fs.readFileSync(apiConfigFile, 'utf8');
         const config = parse(file);
-        return new Config(config.url, config.fields);
+        return new Config(config.port, config.apis);
     }
 }
