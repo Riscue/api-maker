@@ -5,4 +5,5 @@ export class Api {
     name: string;
     path: string;
     fields: Field[];
+    headers: any[];
 }

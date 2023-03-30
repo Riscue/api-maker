@@ -26,7 +26,14 @@ app.get('/', async (req, res) => {
 config.apis.forEach((api: Api) => {
     app.get(`/${api.path}`, async (req, res) => {
         res.setHeader("Content-Type", "application/json");
-        res.send(parse(await fetchContent(api.url), api.fields));
+
+        const headers = {};
+        if (api.headers) {
+            for (let header in api.headers) {
+                headers[header] = api.headers[header];
+            }
+        }
+        res.send(parse(await fetchContent(api.url, headers), api.fields));
     });
 });
 

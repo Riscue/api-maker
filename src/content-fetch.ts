@@ -1,8 +1,8 @@
-function httpGet(url: string) {
+function httpGet(url: string, headers: any) {
     return new Promise((resolve, reject) => {
         const client = url.toString().indexOf("https") === 0 ? require('https') : require('http');
 
-        client.get(url, (resp) => {
+        client.get(url, {headers: headers}, (resp) => {
             const chunks = [];
 
             // A chunk of data has been recieved.
@@ -21,7 +21,8 @@ function httpGet(url: string) {
     });
 }
 
-export async function fetchContent(url: string) {
-    const buf = await httpGet(url);
-    return buf.toString();
+export async function fetchContent(url: string, headers: any) {
+    if (url) {
+        return (await httpGet(url, headers)).toString();
+    }
 }
