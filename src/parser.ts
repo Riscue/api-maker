@@ -10,7 +10,7 @@ function parseFields(document: any, fields: Field[], response: { [key: string]: 
     for (const field of fields) {
         if (!!field.process) {
             try {
-                response[field.name] = document.querySelector(field.process.query)[field.process.method];
+                response[field.name] = document.querySelector(field.process.query)[field.process.method].trim();
             } catch (e) {
             }
         } else {
