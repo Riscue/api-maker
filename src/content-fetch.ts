@@ -21,8 +21,27 @@ function httpGet(url: string, headers: any) {
     });
 }
 
+function httpGetHeadless(url: string, headers: any) {
+    return new Promise((resolve, reject) => {
+        try {
+            const puppeteer = require('puppeteer');
+            (async () => {
+                const browser = await puppeteer.launch({headless: true});
+                const page = await browser.newPage();
+                await page.setExtraHTTPHeaders(headers);
+                await page.goto(url, {waitUntil: 'networkidle0'});
+                const content = await page.content();
+                resolve(content);
+                await browser.close();
+            })();
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 export async function fetchContent(url: string, headers: any) {
     if (url) {
-        return (await httpGet(url, headers)).toString();
+        return (await httpGetHeadless(url, headers)).toString();
     }
 }
