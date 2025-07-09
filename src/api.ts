@@ -6,4 +6,5 @@ export class Api {
     path: string;
     fields: Field[];
     headers: any[];
+    headlessBrowser: boolean;
 }

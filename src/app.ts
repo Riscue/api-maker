@@ -33,7 +33,7 @@ config.apis.forEach((api: Api) => {
                 headers[header] = api.headers[header];
             }
         }
-        res.send(parse(await fetchContent(api.url, headers), api.fields));
+        res.send(parse(await fetchContent(api.url, headers, api.headlessBrowser), api.fields));
     });
 });
 
