@@ -1,3 +1,5 @@
+import {getBrowser} from "./browser";
+
 function httpGet(url: string, headers: any) {
     return new Promise((resolve, reject) => {
         const client = url.toString().indexOf("https") === 0 ? require('https') : require('http');
@@ -24,18 +26,14 @@ function httpGet(url: string, headers: any) {
 function httpGetHeadless(url: string, headers: any) {
     return new Promise((resolve, reject) => {
         try {
-            const puppeteer = require('puppeteer');
             (async () => {
-                const browser = await puppeteer.launch({
-                    headless: true,
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
-                });
+                const browser = getBrowser();
                 const page = await browser.newPage();
                 await page.setExtraHTTPHeaders(headers);
-                await page.goto(url, {waitUntil: 'networkidle0'});
+                await page.goto(url, {waitUntil: 'domcontentloaded'});
                 const content = await page.content();
                 resolve(content);
-                await browser.close();
+                await page.close();
             })();
         } catch (err) {
             reject(err);

@@ -4,6 +4,7 @@ import {parse} from "./parser";
 import {fetchContent} from "./content-fetch";
 import morgan from "morgan";
 import {Api} from "./api";
+import {closeBrowser, launchBrowser} from "./browser";
 
 const config = Config.parse();
 
@@ -36,6 +37,9 @@ config.apis.forEach((api: Api) => {
         res.send(parse(await fetchContent(api.url, headers, api.headlessBrowser), api.fields));
     });
 });
+
+(async () => await launchBrowser())();
+process.on('exit', async () => await closeBrowser());
 
 app.listen(config.port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${config.port}`);
