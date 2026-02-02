@@ -8,9 +8,25 @@ function parseFields(document: any, fields: Field[], response: { [key: string]: 
     }
 
     for (const field of fields) {
-        if (!!field.process) {
+        if (field.process?.array && field.fields?.length) {
+            // Array of nested objects (e.g., matches)
             try {
-                response[field.name] = document.querySelector(field.process.query)[field.process.method].trim();
+                const elements = document.querySelectorAll(field.process.query);
+                response[field.name] = Array.from(elements).map((el: any) => {
+                    return parseFields(el, field.fields, {});
+                });
+            } catch (e) {}
+        } else if (field.process) {
+            try {
+                if (field.process.array) {
+                    const elements = document.querySelectorAll(field.process.query);
+                    response[field.name] = Array.from(elements).map((el: any) => {
+                        const val = el[field.process.method];
+                        return typeof val === 'string' ? val.trim() : val;
+                    });
+                } else {
+                    response[field.name] = document.querySelector(field.process.query)[field.process.method].trim();
+                }
             } catch (e) {
             }
         } else {
