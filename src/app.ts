@@ -34,7 +34,33 @@ config.apis.forEach((api: Api) => {
                 headers[header] = api.headers[header];
             }
         }
-        res.send(parse(await fetchContent(api.url, headers, api.headlessBrowser), api.fields));
+
+        try {
+            const content = await fetchContent(api.url, headers, api.fetchMode, api.proxySettings);
+            if (content) {
+                res.send(parse(content, api.fields));
+            } else {
+                const proxyInfo = api.fetchMode === 'proxy' && api.proxySettings
+                    ? ` (${api.proxySettings.host}:${api.proxySettings.port})`
+                    : '';
+                const errorMsg = `Failed to fetch content from ${api.url}${proxyInfo}`;
+                console.error(`[${api.name}] ${errorMsg}`);
+                res.status(503).json({
+                    error: 'Service Unavailable',
+                    message: errorMsg,
+                    details: api.fetchMode === 'proxy' && api.proxySettings
+                        ? `Proxy server ${api.proxySettings.host}:${api.proxySettings.port} is not reachable`
+                        : `Network connection failed (mode: ${api.fetchMode})`
+                });
+            }
+        } catch (err) {
+            const errorMsg = `[${api.name}] Internal error: ${err.message}`;
+            console.error(errorMsg);
+            res.status(500).json({
+                error: 'Internal Server Error',
+                message: err.message
+            });
+        }
     });
 });
 
