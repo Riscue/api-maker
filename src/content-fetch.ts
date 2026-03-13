@@ -1,9 +1,9 @@
-import {getBrowser} from "./browser";
+import {getBrowser, launchBrowser} from "./browser";
 import {FetchMode, ProxySettings} from "./api";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {HttpProxyAgent} from "http-proxy-agent";
 
-function httpGet(url: string, headers: any, proxySettings?: ProxySettings): Promise<Buffer> {
+function httpGet(url: string, headers: any, proxySettings?: ProxySettings): Promise<Buffer | null> {
     return new Promise((resolve, reject) => {
         const isHttps = url.toString().indexOf("https") === 0;
         const client = isHttps ? require('https') : require('http');
@@ -60,22 +60,25 @@ function httpGet(url: string, headers: any, proxySettings?: ProxySettings): Prom
     });
 }
 
-function httpGetHeadless(url: string, headers: any): Promise<string> {
-    return new Promise((resolve, reject) => {
-        try {
-            (async () => {
-                const browser = getBrowser();
-                const page = await browser.newPage();
-                await page.setExtraHTTPHeaders(headers);
-                await page.goto(url, {waitUntil: 'domcontentloaded'});
-                const content = await page.content();
-                resolve(content);
-                await page.close();
-            })();
-        } catch (err) {
-            reject(err);
+async function httpGetHeadless(url: string, headers: any): Promise<string | null> {
+    try {
+        // Browser'ın hazır olmasını bekle
+        let browser = getBrowser();
+        if (!browser) {
+            await launchBrowser();
+            browser = getBrowser();
         }
-    });
+
+        const page = await browser.newPage();
+        await page.setExtraHTTPHeaders(headers);
+        await page.goto(url, {waitUntil: 'domcontentloaded'});
+        const content = await page.content();
+        await page.close();
+        return content;
+    } catch (err) {
+        console.error(`Headless request failed for ${url}:`, err.message);
+        return null;
+    }
 }
 
 export async function fetchContent(url: string, headers: any, fetchMode?: FetchMode, proxySettings?: ProxySettings): Promise<string | null> {
