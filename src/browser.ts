@@ -7,7 +7,17 @@ export async function launchBrowser() {
         console.log('Browser instance is not initialized. Launching browser...');
         browserInstance = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-web-security',
+                '--disable-features=BlockInsecurePrivateNetworkRequests',
+                '--disable-extensions',
+                '--no-first-run',
+                '--no-default-browser-check',
+                '--ignore-certificate-errors',
+                '--ignore-ssl-errors'
+            ]
         });
     }
 }
