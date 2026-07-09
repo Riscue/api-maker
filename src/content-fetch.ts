@@ -1,7 +1,7 @@
-import {getBrowser, launchBrowser} from "./browser";
-import {FetchMode, ProxySettings} from "./api";
+import {FetchMode, FlareSolverrSettings, ProxySettings} from "./api";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {HttpProxyAgent} from "http-proxy-agent";
+import {fetchViaFlareSolverr} from "./flaresolverr";
 
 function httpGet(url: string, headers: any, proxySettings?: ProxySettings): Promise<Buffer | null> {
     return new Promise((resolve, reject) => {
@@ -60,28 +60,13 @@ function httpGet(url: string, headers: any, proxySettings?: ProxySettings): Prom
     });
 }
 
-async function httpGetHeadless(url: string, headers: any): Promise<string | null> {
-    try {
-        // Browser'ın hazır olmasını bekle
-        let browser = getBrowser();
-        if (!browser) {
-            await launchBrowser();
-            browser = getBrowser();
-        }
-
-        const page = await browser.newPage();
-        await page.setExtraHTTPHeaders(headers);
-        await page.goto(url, {waitUntil: 'domcontentloaded'});
-        const content = await page.content();
-        await page.close();
-        return content;
-    } catch (err) {
-        console.error(`Headless request failed for ${url}:`, err.message);
-        return null;
-    }
-}
-
-export async function fetchContent(url: string, headers: any, fetchMode?: FetchMode, proxySettings?: ProxySettings): Promise<string | null> {
+export async function fetchContent(
+    url: string,
+    headers: any,
+    fetchMode?: FetchMode,
+    proxySettings?: ProxySettings,
+    flaresolverr?: FlareSolverrSettings
+): Promise<string | null> {
     if (!url) {
         console.error('URL is empty');
         return null;
@@ -94,8 +79,12 @@ export async function fetchContent(url: string, headers: any, fetchMode?: FetchM
         let result: Buffer | string | null = null;
 
         switch (fetchMode) {
-            case 'headless':
-                result = await httpGetHeadless(url, headers);
+            case 'flaresolverr':
+                if (!flaresolverr) {
+                    console.error('FlareSolverr mode requires flaresolverr settings');
+                    return null;
+                }
+                result = await fetchViaFlareSolverr(url, headers, flaresolverr);
                 break;
             case 'proxy':
                 if (!proxySettings) {
